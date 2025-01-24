@@ -3,7 +3,7 @@ using AsmResolver.DotNet.Signatures;
 
 namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 {
-    internal class ResolvedTypeReference : IResolvedReference<ITypeDefOrRef>
+    internal class ResolvedTypeReference : ResolvedReferenceBase<ITypeDefOrRef>
     {
         private readonly ITypeDefOrRef _original;
         private readonly TypeDefinition _resolved;
@@ -20,7 +20,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public ITypeDefOrRef GetResolved()
+        protected override ITypeDefOrRef Resolve()
         {
             if (_genericArgs != null)
             {

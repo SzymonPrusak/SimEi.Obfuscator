@@ -3,7 +3,7 @@ using AsmResolver.DotNet.Signatures;
 
 namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 {
-    internal class ResolvedFieldReference : IResolvedReference<IFieldDescriptor>
+    internal class ResolvedFieldReference : ResolvedReferenceBase<IFieldDescriptor>
     {
         private readonly IFieldDescriptor _original;
         private readonly IFieldDescriptor _resolved;
@@ -15,7 +15,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public IFieldDescriptor GetResolved()
+        protected override IFieldDescriptor Resolve()
         {
             var resolved = _resolved;
             if (_original.DeclaringType is TypeSpecification typeSpec)

@@ -3,7 +3,7 @@ using AsmResolver.DotNet.Signatures;
 
 namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 {
-    internal class ResolvedMethodReference : IResolvedReference<IMethodDefOrRef>
+    internal class ResolvedMethodReference : ResolvedReferenceBase<IMethodDefOrRef>
     {
         private readonly IMethodDefOrRef _original;
         private readonly IMethodDefOrRef _resolved;
@@ -15,7 +15,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public IMethodDefOrRef GetResolved()
+        protected override IMethodDefOrRef Resolve()
         {
             var resolved = _resolved;
             if (_original.DeclaringType is TypeSpecification typeSpec)
