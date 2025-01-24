@@ -22,9 +22,9 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         public ITypeDefOrRef GetResolved()
         {
-            if (_original is TypeSpecification spec)
+            if (_genericArgs != null)
             {
-                var args = _genericArgs!
+                var args = _genericArgs
                     .Select(a => a.GetResolved())
                     .ToArray();
                 var genericInstance = _resolved.MakeGenericInstanceType(args);

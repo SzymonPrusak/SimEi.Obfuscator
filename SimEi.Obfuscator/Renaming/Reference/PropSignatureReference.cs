@@ -10,13 +10,13 @@ namespace SimEi.Obfuscator.Renaming.Reference
         private readonly IResolvedReference<TypeSignature> _retTypeRef;
         private readonly List<IResolvedReference<TypeSignature>> _paramTypeRefs;
 
-        public PropSignatureReference(PropertySignature signature)
+        public PropSignatureReference(PropertySignature signature, ReferenceResolver resolver)
         {
             _signature = signature;
 
-            _retTypeRef = ReferenceResolver.ResolveSig(signature.ReturnType);
+            _retTypeRef = resolver.ResolveSig(signature.ReturnType);
             _paramTypeRefs = signature.ParameterTypes
-                .Select(ReferenceResolver.ResolveSig)
+                .Select(resolver.ResolveSig)
                 .ToList();
         }
 

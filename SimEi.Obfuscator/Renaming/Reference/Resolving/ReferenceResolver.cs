@@ -3,17 +3,25 @@ using AsmResolver.DotNet.Signatures;
 
 namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 {
-    internal static class ReferenceResolver
+    internal class ReferenceResolver
     {
-        public static IResolvedReference<ITypeDefOrRef> Resolve(ITypeDefOrRef type)
+        private readonly IMetadataResolver _metadataResolver;
+
+        public ReferenceResolver(IMetadataResolver metadataResolver)
         {
-            var resolved = type.Resolve();
+            _metadataResolver = metadataResolver;
+        }
+
+
+        public IResolvedReference<ITypeDefOrRef> Resolve(ITypeDefOrRef type)
+        {
+            var resolved = _metadataResolver.ResolveType(type);
             if (resolved == null)
                 throw new ArgumentException();
 
-            if (type is TypeSpecification spec)
+            if (type is TypeSpecification spec && spec.Signature is GenericInstanceTypeSignature sig)
             {
-                var gargs = ((GenericInstanceTypeSignature)spec.Signature!).TypeArguments
+                var gargs = sig.TypeArguments
                     .Select(ResolveSig)
                     .ToList();
                 return new ResolvedTypeReference(type, resolved, gargs);
@@ -22,24 +30,24 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public static IResolvedReference<IMethodDefOrRef>? TryResolve(IMethodDefOrRef method)
+        public IResolvedReference<IMethodDefOrRef>? TryResolve(IMethodDefOrRef method)
         {
-            var resolved = method.Resolve();
+            var resolved = _metadataResolver.ResolveMethod(method);
             if (resolved == null)
                 return null;
 
             return new ResolvedMethodReference(method, resolved);
         }
 
-        public static IResolvedReference<IMethodDefOrRef> Resolve(IMethodDefOrRef method)
+        public IResolvedReference<IMethodDefOrRef> Resolve(IMethodDefOrRef method)
         {
             return TryResolve(method) ?? throw new ArgumentException();
         }
 
 
-        public static IResolvedReference<IFieldDescriptor> Resolve(IFieldDescriptor field)
+        public IResolvedReference<IFieldDescriptor> Resolve(IFieldDescriptor field)
         {
-            var resolved = field.Resolve();
+            var resolved = _metadataResolver.ResolveField(field);
             if (resolved == null)
                 throw new ArgumentException();
 
@@ -47,9 +55,9 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public static IResolvedReference<TypeSignature> ResolveSig(TypeSignature sig)
+        public IResolvedReference<TypeSignature> ResolveSig(TypeSignature sig)
         {
-            var resolved = sig.Resolve();
+            var resolved = _metadataResolver.ResolveType(sig);
             if (resolved != null)
             {
                 if (sig is GenericInstanceTypeSignature git)

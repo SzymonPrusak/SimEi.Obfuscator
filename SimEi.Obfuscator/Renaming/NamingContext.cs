@@ -37,7 +37,7 @@ namespace SimEi.Obfuscator.Renaming
 
         private class NamingLevel
         {
-            private const string AllChars = "ABCDEFGHIJKLMNOPQRSTUWXYWabcdefghijklmnopqrstuwxyw0123456789";
+            private const string AllChars = "ㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅥㅦㅧㅨㅩㅪㅫㅬㅭㅮㅯㅰㅱㅲㅳㅴㅵㅶㅷㅸㅹㅺㅻㅼㅽㅾㅿㆀㆁㆂㆃㆄㆅㆆㆇㆈㆉㆊ㊐㊑㊒㊓㊔㊕㊊㊋㊌㊍㊎㊏㊖㊗㊞㊟㊠㊡㊢㊣㊤㊥㊦㊘㊙㊚㊛㊜㊝㊧㊨㊩㊪㊫㊬㊭㊰㊮㊯ッツヅミテデトドナぁあぃいぅうぇえぉおかがきぎけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖ゛゜ゝゞゟ゠ァアィイカガキギクグケゲコゴサザシジスズセゼソゾタダチヂニヌネノハバパヒビピフブプヘベペホボポマムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶヷヸヹヺヾくぐゥウェエォオ";
 
             private readonly Dictionary<RenamedElementType, (char[], int)> _elNamings;
 

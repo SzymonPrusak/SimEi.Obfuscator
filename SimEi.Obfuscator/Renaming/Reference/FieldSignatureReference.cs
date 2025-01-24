@@ -9,11 +9,11 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IResolvedReference<TypeSignature> _fieldTypeRef;
 
-        public FieldSignatureReference(FieldSignature signature)
+        public FieldSignatureReference(FieldSignature signature, ReferenceResolver resolver)
         {
             _signature = signature;
 
-            _fieldTypeRef = ReferenceResolver.ResolveSig(_signature.FieldType);
+            _fieldTypeRef = resolver.ResolveSig(_signature.FieldType);
         }
 
 

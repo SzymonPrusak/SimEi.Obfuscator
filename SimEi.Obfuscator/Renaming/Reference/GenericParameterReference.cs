@@ -9,12 +9,12 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IEnumerable<IResolvedReference<ITypeDefOrRef>> _constraintRefs;
 
-        public GenericParameterReference(GenericParameter parameter)
+        public GenericParameterReference(GenericParameter parameter, ReferenceResolver resolver)
         {
             _parameter = parameter;
 
             _constraintRefs = parameter.Constraints
-                .Select(c => ReferenceResolver.Resolve(c.Constraint!))
+                .Select(c => resolver.Resolve(c.Constraint!))
                 .ToList();
         }
 

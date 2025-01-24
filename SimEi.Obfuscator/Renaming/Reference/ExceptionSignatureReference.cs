@@ -8,19 +8,20 @@ namespace SimEi.Obfuscator.Renaming.Reference
     {
         private readonly CilExceptionHandler _handler;
 
-        private readonly IResolvedReference<ITypeDefOrRef> _resolved;
+        private readonly IResolvedReference<ITypeDefOrRef>? _resolved;
 
-        public ExceptionSignatureReference(CilExceptionHandler handler)
+        public ExceptionSignatureReference(CilExceptionHandler handler, ReferenceResolver resolver)
         {
             _handler = handler;
 
-            _resolved = ReferenceResolver.Resolve(handler.ExceptionType!);
+            if (handler.ExceptionType != null)
+                _resolved = resolver.Resolve(handler.ExceptionType!);
         }
 
 
         public void Fix()
         {
-            _handler.ExceptionType = _resolved.GetResolved();
+            _handler.ExceptionType = _resolved?.GetResolved();
         }
     }
 }

@@ -10,11 +10,11 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IResolvedReference<TypeSignature> _typeRef;
 
-        public LocalSignatureReference(CilLocalVariable local)
+        public LocalSignatureReference(CilLocalVariable local, ReferenceResolver resolver)
         {
             _local = local;
 
-            _typeRef = ReferenceResolver.ResolveSig(local.VariableType);
+            _typeRef = resolver.ResolveSig(local.VariableType);
         }
 
 

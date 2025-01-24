@@ -10,12 +10,12 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IResolvedReference<IMethodDefOrRef> _methodRef;
 
-        public InstructionMethodReference(CilInstruction instruction)
+        public InstructionMethodReference(CilInstruction instruction, ReferenceResolver resolver)
         {
             _instruction = instruction;
 
             var mr = (MemberReference)instruction.Operand!;
-            _methodRef = ReferenceResolver.Resolve((IMethodDefOrRef)mr);
+            _methodRef = resolver.Resolve((IMethodDefOrRef)mr);
         }
 
 

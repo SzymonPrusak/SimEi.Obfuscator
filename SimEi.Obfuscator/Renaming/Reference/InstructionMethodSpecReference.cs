@@ -12,14 +12,14 @@ namespace SimEi.Obfuscator.Renaming.Reference
         private readonly IResolvedReference<IMethodDefOrRef> _methodRef;
         private readonly IEnumerable<IResolvedReference<TypeSignature>> _genericArgs;
 
-        public InstructionMethodSpecReference(CilInstruction instruction)
+        public InstructionMethodSpecReference(CilInstruction instruction, ReferenceResolver resolver)
         {
             _instruction = instruction;
 
             var spec = (MethodSpecification)instruction.Operand!;
-            _methodRef = ReferenceResolver.Resolve(spec.Method!);
+            _methodRef = resolver.Resolve(spec.Method!);
             _genericArgs = spec.Signature!.TypeArguments
-                .Select(ReferenceResolver.ResolveSig)
+                .Select(resolver.ResolveSig)
                 .ToList();
         }
 

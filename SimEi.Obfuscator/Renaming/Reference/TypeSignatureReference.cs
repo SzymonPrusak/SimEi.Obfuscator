@@ -10,15 +10,15 @@ namespace SimEi.Obfuscator.Renaming.Reference
         private readonly IResolvedReference<ITypeDefOrRef>? _baseTypeRef;
         private readonly IEnumerable<IResolvedReference<ITypeDefOrRef>> _interfaceRefs;
 
-        public TypeSignatureReference(TypeDefinition type)
+        public TypeSignatureReference(TypeDefinition type, ReferenceResolver resolver)
         {
             _type = type;
 
             _baseTypeRef = type.BaseType != null 
-                ? ReferenceResolver.Resolve(type.BaseType!)
+                ? resolver.Resolve(type.BaseType!)
                 : null;
             _interfaceRefs = type.Interfaces
-                .Select(i => ReferenceResolver.Resolve(i.Interface!))
+                .Select(i => resolver.Resolve(i.Interface!))
                 .ToList();
         }
 

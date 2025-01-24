@@ -10,12 +10,12 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IResolvedReference<IFieldDescriptor> _fieldRef;
 
-        public InstructionFieldReference(CilInstruction instruction)
+        public InstructionFieldReference(CilInstruction instruction, ReferenceResolver resolver)
         {
             _instruction = instruction;
 
             var mr = (MemberReference)instruction.Operand!;
-            _fieldRef = ReferenceResolver.Resolve((IFieldDescriptor)mr);
+            _fieldRef = resolver.Resolve((IFieldDescriptor)mr);
         }
 
 

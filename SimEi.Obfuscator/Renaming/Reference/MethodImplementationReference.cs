@@ -10,12 +10,12 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IResolvedReference<IMethodDefOrRef> _resolved;
 
-        public MethodImplementationReference(TypeDefinition type, int index)
+        public MethodImplementationReference(TypeDefinition type, int index, ReferenceResolver resolver)
         {
             _type = type;
             _index = index;
 
-            _resolved = ReferenceResolver.Resolve(type.MethodImplementations[index].Declaration!);
+            _resolved = resolver.Resolve(type.MethodImplementations[index].Declaration!);
         }
 
 

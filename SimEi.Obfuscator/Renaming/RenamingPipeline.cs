@@ -18,6 +18,12 @@ namespace SimEi.Obfuscator.Renaming
 
         public void Rename(IEnumerable<ModuleDefinition> modules)
         {
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Start renaming...");
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Renamed modules:");
+            foreach (var module in modules)
+                Console.WriteLine($"  - {module.Name}");
+
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Finding references...");
             var msg = new MethodSigGraph();
             var refTracker = new ReferenceTracker(_metadataResolver, msg);
             var obfAttrPerm = new ObfuscationAttributePermissions();
@@ -26,7 +32,9 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, refTracker);
                 Visit(module, obfAttrPerm);
             }
-            
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Found {refTracker.ReferenceCount} references.");
+
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Executing renaming...");
             var configPerm = new ConfigPermissions();
             var compPerm = new CompositeRenamingPermissions(obfAttrPerm, configPerm);
 
@@ -44,6 +52,7 @@ namespace SimEi.Obfuscator.Renaming
                     method.Name = name;
             }
 
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Fixing references...");
             var excludeSigGraphPerm = new ConcreteExcludedPermissions(msg.Nodes);
             var finalPerm = new CompositeRenamingPermissions(compPerm, excludeSigGraphPerm);
             foreach (var module in modules)
@@ -54,6 +63,8 @@ namespace SimEi.Obfuscator.Renaming
             }
 
             refTracker.FixTrackedReferences();
+
+            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Done!");
         }
 
 

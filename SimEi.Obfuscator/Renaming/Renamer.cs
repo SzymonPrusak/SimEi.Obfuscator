@@ -53,14 +53,6 @@ namespace SimEi.Obfuscator.Renaming
 
         public override void VisitMethod(MethodDefinition method, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            if (method.IsConstructor || !_permissions.CanRename(method))
-                return;
-
-            method.Name = _namingContext.GetNextName(method.DeclaringType, RenamedElementType.Method);
-
-            foreach (var gparam in method.GenericParameters)
-                gparam.Name = _namingContext.GetNextName(method.DeclaringType, RenamedElementType.GenericParameter);
-
             foreach (var param in method.ParameterDefinitions)
             {
                 if (!_permissions.CanRename(param))
@@ -68,6 +60,15 @@ namespace SimEi.Obfuscator.Renaming
 
                 param.Name = null;
             }
+
+            if (!_permissions.CanRename(method))
+                return;
+
+            if (!method.IsConstructor)
+                method.Name = _namingContext.GetNextName(method.DeclaringType, RenamedElementType.Method);
+
+            foreach (var gparam in method.GenericParameters)
+                gparam.Name = _namingContext.GetNextName(method.DeclaringType, RenamedElementType.GenericParameter);
         }
     }
 }

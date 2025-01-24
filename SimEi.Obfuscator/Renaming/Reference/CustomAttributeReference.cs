@@ -9,16 +9,16 @@ namespace SimEi.Obfuscator.Renaming.Reference
         private readonly CustomAttribute _attribute;
 
         private readonly IResolvedReference<IMethodDefOrRef> _resolved;
-        private readonly IEnumerable<IEnumerable<IResolvedReference<ITypeDefOrRef>?>> _fixedTypeArgs;
-        private readonly IEnumerable<IEnumerable<IResolvedReference<ITypeDefOrRef>?>> _namedTypeArgs;
+        private readonly IEnumerable<IEnumerable<IResolvedReference<TypeSignature>?>> _fixedTypeArgs;
+        private readonly IEnumerable<IEnumerable<IResolvedReference<TypeSignature>?>> _namedTypeArgs;
 
-        public CustomAttributeReference(CustomAttribute attribute)
+        public CustomAttributeReference(CustomAttribute attribute, ReferenceResolver resolver)
         {
             _attribute = attribute;
             
-            _resolved = ReferenceResolver.Resolve(attribute.Constructor!);
-            _fixedTypeArgs = GetTypeArgs(attribute.Signature!.FixedArguments);
-            _namedTypeArgs = GetTypeArgs(attribute.Signature!.NamedArguments.Select(a => a.Argument));
+            _resolved = resolver.Resolve(attribute.Constructor!);
+            _fixedTypeArgs = GetTypeArgs(attribute.Signature!.FixedArguments, resolver);
+            _namedTypeArgs = GetTypeArgs(attribute.Signature!.NamedArguments.Select(a => a.Argument), resolver);
         }
 
 
@@ -31,13 +31,13 @@ namespace SimEi.Obfuscator.Renaming.Reference
         }
 
 
-        private IEnumerable<IEnumerable<IResolvedReference<ITypeDefOrRef>?>> GetTypeArgs(
-            IEnumerable<CustomAttributeArgument> arguments)
+        private IEnumerable<IEnumerable<IResolvedReference<TypeSignature>?>> GetTypeArgs(
+            IEnumerable<CustomAttributeArgument> arguments, ReferenceResolver resolver)
         {
             return arguments
                 .Select(a => a.Elements
                     .Select(el =>
-                        (el is ITypeDefOrRef type) ? ReferenceResolver.Resolve(type) : null
+                        (el is TypeSignature type) ? resolver.ResolveSig(type) : null
                     )
                     .ToList()
                 )
@@ -45,7 +45,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
         }
 
         private void ApplyArgs(IEnumerable<CustomAttributeArgument> arguments,
-            IEnumerable<IEnumerable<IResolvedReference<ITypeDefOrRef>?>> resolved)
+            IEnumerable<IEnumerable<IResolvedReference<TypeSignature>?>> resolved)
         {
             foreach ((var original, var res) in arguments.Zip(resolved))
             {

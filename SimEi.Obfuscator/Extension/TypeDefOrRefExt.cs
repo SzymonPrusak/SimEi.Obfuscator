@@ -5,7 +5,7 @@ namespace SimEi.Obfuscator.Extension
 {
     internal static class TypeDefOrRefExt
     {
-        public static List<(MethodIdentifier, MethodDefinition)> GetAllMethodDefinitions(this TypeDefinition type,
+        public static List<(MethodIdentifier, MethodDefinition)> GetAllMethodDefinitions(this ITypeDefOrRef type,
             IMetadataResolver resolver)
         {
             var methods = new List<(MethodIdentifier, MethodDefinition)>();

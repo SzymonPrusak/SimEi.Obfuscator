@@ -9,11 +9,11 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly IResolvedReference<ITypeDefOrRef> _delegateRef;
 
-        public EventDelegateReference(EventDefinition @event)
+        public EventDelegateReference(EventDefinition @event, ReferenceResolver resolver)
         {
             _event = @event;
 
-            _delegateRef = ReferenceResolver.Resolve(@event.EventType!);
+            _delegateRef = resolver.Resolve(@event.EventType!);
         }
 
 
