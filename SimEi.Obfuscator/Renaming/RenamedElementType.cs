@@ -1,7 +1,7 @@
 ﻿
 namespace SimEi.Obfuscator.Renaming
 {
-    internal enum RenamedElementType
+    public enum RenamedElementType
     {
         Type,
         Field,

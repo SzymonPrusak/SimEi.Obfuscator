@@ -20,6 +20,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         public TypeSignature GetResolved()
         {
+            string name = _resolvedType.Name;
             var imported = _originalSignature.Module!.DefaultImporter.ImportType(_resolvedType);
             if (_originalSignature is SzArrayTypeSignature)
                 return imported.MakeSzArrayType();
