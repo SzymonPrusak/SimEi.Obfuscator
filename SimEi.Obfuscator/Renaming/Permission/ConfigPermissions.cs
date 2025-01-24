@@ -81,17 +81,14 @@ namespace SimEi.Obfuscator.Renaming.Permission
                 if (!IsApplicable(rule, type))
                     continue;
 
-                if (rule.ExplicitMembers != null)
+                if (rule.Members != null)
                 {
-                    foreach (var memberRule in rule.ExplicitMembers)
+                    foreach (var memberRule in rule.Members)
                     {
                         if (IsApplicable(memberRule, name, isPrivate, elType))
                             return false;
                     }
                 }
-
-                if (!(rule?.SkipMembers ?? false))
-                    return false;
             }
             return true;
         }
@@ -99,7 +96,7 @@ namespace SimEi.Obfuscator.Renaming.Permission
         private IEnumerable<ExcludeClass> GetApplicableRules(ModuleDefinition module)
         {
             var moduleConfig = _config.Assemblies
-                .FirstOrDefault(a => a.Path == module.Assembly!.FullName);
+                .FirstOrDefault(a => a.Path == module.Name!.ToString().Trim('"'));
             return moduleConfig != null
                 ? _config.GlobalExcludes.Concat(moduleConfig.Excludes)
                 : _config.GlobalExcludes;

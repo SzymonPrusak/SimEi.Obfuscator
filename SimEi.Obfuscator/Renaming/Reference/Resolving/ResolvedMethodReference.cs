@@ -5,34 +5,52 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 {
     internal class ResolvedMethodReference : ResolvedReferenceBase<IMethodDefOrRef>
     {
-        private readonly IMethodDefOrRef _original;
-        private readonly IMethodDefOrRef _resolved;
+        private readonly IMethodDescriptor _original;
+        private readonly MethodDefinition _resolved;
 
         private readonly IEnumerable<IResolvedReference<TypeSignature>>? _declaringTypeGenericArgs;
+        private readonly IEnumerable<IResolvedReference<TypeSignature>>? _methodGenericArgs;
 
-        public ResolvedMethodReference(IMethodDefOrRef original, IMethodDefOrRef resolved,
-            IEnumerable<IResolvedReference<TypeSignature>>? declaringTypeGenericArgs)
+        public ResolvedMethodReference(IMethodDescriptor original, MethodDefinition resolved,
+            IEnumerable<IResolvedReference<TypeSignature>>? declaringTypeGenericArgs,
+            IEnumerable<IResolvedReference<TypeSignature>>? methodGenericArgs)
         {
             _original = original;
             _resolved = resolved;
 
             _declaringTypeGenericArgs = declaringTypeGenericArgs;
+            _methodGenericArgs = methodGenericArgs;
         }
 
 
         protected override IMethodDefOrRef Resolve()
         {
-            var resolved = _resolved;
+            GenericContext genCtx = default;
+            ITypeDefOrRef? targetType = null;
             if (_original.DeclaringType is TypeSpecification typeSpec)
             {
                 var args = _declaringTypeGenericArgs!
                     .Select(a => a.GetResolved())
                     .ToArray();
                 var genericInstance = _resolved.DeclaringType!.MakeGenericInstanceType(args);
-                var resolvedTs = new TypeSpecification(genericInstance);
-                resolved = new MemberReference(resolvedTs, _resolved.Name, _resolved.Signature);
+                targetType = new TypeSpecification(genericInstance);
+                genCtx = new GenericContext(genericInstance, null);
             }
-            return _original.Module!.DefaultImporter.ImportMethod(resolved);
+            else
+                targetType = _resolved.DeclaringType;
+
+            if (_original is MethodSpecification mSpec)
+            {
+                var args = _methodGenericArgs!
+                    .Select(a => a.GetResolved())
+                    .ToArray();
+                var genericInstance = _resolved.MakeGenericInstanceMethod(args);
+                genCtx = new GenericContext(genCtx.Type, genericInstance.Signature);
+            }
+
+            var finalSig = _resolved.Signature!.InstantiateGenericTypes(genCtx);
+            var targetRef = new MemberReference(targetType, _original.Name, finalSig);
+            return _original.Module!.DefaultImporter.ImportMethod(_resolved);
         }
     }
 }

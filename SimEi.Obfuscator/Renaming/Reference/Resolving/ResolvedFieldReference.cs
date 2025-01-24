@@ -6,9 +6,9 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
     internal class ResolvedFieldReference : ResolvedReferenceBase<IFieldDescriptor>
     {
         private readonly IFieldDescriptor _original;
-        private readonly IFieldDescriptor _resolved;
+        private readonly FieldDefinition _resolved;
 
-        public ResolvedFieldReference(IFieldDescriptor original, IFieldDescriptor resolved)
+        public ResolvedFieldReference(IFieldDescriptor original, FieldDefinition resolved)
         {
             _original = original;
             _resolved = resolved;
@@ -17,7 +17,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         protected override IFieldDescriptor Resolve()
         {
-            var resolved = _resolved;
+            IFieldDescriptor resolved = _resolved;
             if (_original.DeclaringType is TypeSpecification typeSpec)
             {
                 var args = ((GenericInstanceTypeSignature)typeSpec.Signature!).TypeArguments;

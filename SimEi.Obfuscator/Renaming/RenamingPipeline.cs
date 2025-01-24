@@ -20,12 +20,12 @@ namespace SimEi.Obfuscator.Renaming
 
         public void Rename(IEnumerable<ModuleDefinition> modules)
         {
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Start renaming...");
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Renamed modules:");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Start renaming...");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Renamed modules:");
             foreach (var module in modules)
                 Console.WriteLine($"  - {module.Name}");
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Finding references...");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Finding references...");
             var msg = new MethodSigGraph();
             var refTracker = new ReferenceTracker(_metadataResolver, msg);
             var obfAttrPerm = new ObfuscationAttributePermissions();
@@ -34,9 +34,9 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, refTracker);
                 Visit(module, obfAttrPerm);
             }
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Found {refTracker.ReferenceCount} references.");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Found {refTracker.ReferenceCount} references.");
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Executing renaming...");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Executing renaming...");
             var compPerm = new CompositeRenamingPermissions(obfAttrPerm, _externalPermissions);
 
             var depMethodsNamingContext = new NamingContext("__");
@@ -63,10 +63,10 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, renamer);
             }
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Fixing references...");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Fixing references...");
             refTracker.FixTrackedReferences();
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Done!");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Done!");
         }
 
 
