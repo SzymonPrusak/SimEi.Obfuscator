@@ -3,7 +3,7 @@ using AsmResolver.DotNet.Signatures;
 
 namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 {
-    internal class ResolvedMethodReference : ResolvedReferenceBase<IMethodDefOrRef>
+    internal class ResolvedMethodReference : ResolvedReferenceBase<IMethodDescriptor>
     {
         private readonly IMethodDescriptor _original;
         private readonly MethodDefinition _resolved;
@@ -23,34 +23,28 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        protected override IMethodDefOrRef Resolve()
+        protected override IMethodDescriptor Resolve()
         {
-            GenericContext genCtx = default;
-            ITypeDefOrRef? targetType = null;
+            IMethodDefOrRef? resolved = _resolved;
             if (_original.DeclaringType is TypeSpecification typeSpec)
             {
                 var args = _declaringTypeGenericArgs!
                     .Select(a => a.GetResolved())
                     .ToArray();
                 var genericInstance = _resolved.DeclaringType!.MakeGenericInstanceType(args);
-                targetType = new TypeSpecification(genericInstance);
-                genCtx = new GenericContext(genericInstance, null);
+                var targetType = new TypeSpecification(genericInstance);
+                resolved = new MemberReference(targetType, _original.Name, _resolved.Signature);
             }
-            else
-                targetType = _resolved.DeclaringType;
 
             if (_original is MethodSpecification mSpec)
             {
                 var args = _methodGenericArgs!
                     .Select(a => a.GetResolved())
                     .ToArray();
-                var genericInstance = _resolved.MakeGenericInstanceMethod(args);
-                genCtx = new GenericContext(genCtx.Type, genericInstance.Signature);
+                var genericInstance = resolved.MakeGenericInstanceMethod(args);
+                return _original.Module!.DefaultImporter.ImportMethod(genericInstance);
             }
-
-            var finalSig = _resolved.Signature!.InstantiateGenericTypes(genCtx);
-            var targetRef = new MemberReference(targetType, _original.Name, finalSig);
-            return _original.Module!.DefaultImporter.ImportMethod(_resolved);
+            return _original.Module!.DefaultImporter.ImportMethod(resolved);
         }
     }
 }

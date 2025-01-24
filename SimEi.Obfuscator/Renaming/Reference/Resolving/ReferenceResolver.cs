@@ -8,7 +8,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         private readonly IMetadataResolver _metadataResolver;
 
         private readonly Dictionary<ITypeDefOrRef, IResolvedReference<ITypeDefOrRef>> _typeCache;
-        private readonly Dictionary<IMethodDescriptor, IResolvedReference<IMethodDefOrRef>> _methodCache;
+        private readonly Dictionary<IMethodDescriptor, IResolvedReference<IMethodDescriptor>> _methodCache;
         private readonly Dictionary<IFieldDescriptor, IResolvedReference<IFieldDescriptor>> _fieldCache;
         private readonly Dictionary<TypeSignature, IResolvedReference<TypeSignature>> _sigCache;
 
@@ -32,7 +32,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public IResolvedReference<IMethodDefOrRef> Resolve(IMethodDescriptor method)
+        public IResolvedReference<IMethodDescriptor> Resolve(IMethodDescriptor method)
         {
             if (_methodCache.TryGetValue(method, out var r))
                 return r;
@@ -82,7 +82,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        private IResolvedReference<IMethodDefOrRef> ResolveCore(IMethodDescriptor method)
+        private IResolvedReference<IMethodDescriptor> ResolveCore(IMethodDescriptor method)
         {
             var resolved = _metadataResolver.ResolveMethod(method);
             if (resolved == null)
