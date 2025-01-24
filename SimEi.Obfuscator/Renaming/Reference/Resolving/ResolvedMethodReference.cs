@@ -8,10 +8,15 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         private readonly IMethodDefOrRef _original;
         private readonly IMethodDefOrRef _resolved;
 
-        public ResolvedMethodReference(IMethodDefOrRef original, IMethodDefOrRef resolved)
+        private readonly IEnumerable<IResolvedReference<TypeSignature>>? _declaringTypeGenericArgs;
+
+        public ResolvedMethodReference(IMethodDefOrRef original, IMethodDefOrRef resolved,
+            IEnumerable<IResolvedReference<TypeSignature>>? declaringTypeGenericArgs)
         {
             _original = original;
             _resolved = resolved;
+
+            _declaringTypeGenericArgs = declaringTypeGenericArgs;
         }
 
 
@@ -20,8 +25,10 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             var resolved = _resolved;
             if (_original.DeclaringType is TypeSpecification typeSpec)
             {
-                var args = ((GenericInstanceTypeSignature)typeSpec.Signature!).TypeArguments;
-                var genericInstance = _resolved.DeclaringType!.MakeGenericInstanceType([..args]);
+                var args = _declaringTypeGenericArgs!
+                    .Select(a => a.GetResolved())
+                    .ToArray();
+                var genericInstance = _resolved.DeclaringType!.MakeGenericInstanceType(args);
                 var resolvedTs = new TypeSpecification(genericInstance);
                 resolved = new MemberReference(resolvedTs, _resolved.Name, _resolved.Signature);
             }

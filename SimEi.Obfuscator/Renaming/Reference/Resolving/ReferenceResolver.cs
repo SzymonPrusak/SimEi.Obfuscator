@@ -8,7 +8,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         private readonly IMetadataResolver _metadataResolver;
 
         private readonly Dictionary<ITypeDefOrRef, IResolvedReference<ITypeDefOrRef>> _typeCache;
-        private readonly Dictionary<IMethodDefOrRef, IResolvedReference<IMethodDefOrRef>?> _methodCache;
+        private readonly Dictionary<IMethodDefOrRef, IResolvedReference<IMethodDefOrRef>> _methodCache;
         private readonly Dictionary<IFieldDescriptor, IResolvedReference<IFieldDescriptor>> _fieldCache;
         private readonly Dictionary<TypeSignature, IResolvedReference<TypeSignature>> _sigCache;
 
@@ -34,14 +34,9 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         public IResolvedReference<IMethodDefOrRef> Resolve(IMethodDefOrRef method)
         {
-            return TryResolveCore(method) ?? throw new ArgumentException();
-        }
-
-        public IResolvedReference<IMethodDefOrRef>? TryResolve(IMethodDefOrRef method)
-        {
             if (_methodCache.TryGetValue(method, out var r))
                 return r;
-            return _methodCache[method] = TryResolveCore(method);
+            return _methodCache[method] = ResolveCore(method);
         }
 
 
@@ -63,13 +58,22 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         private IResolvedReference<ITypeDefOrRef> ResolveCore(ITypeDefOrRef type)
         {
+            GenericInstanceTypeSignature? genSig = null;
+            if (type is TypeSpecification spec)
+            {
+                if (spec.Signature is GenericParameterSignature)
+                    return new NoResolveReference<ITypeDefOrRef>(type);
+
+                genSig = spec.Signature as GenericInstanceTypeSignature;
+            }
+
             var resolved = _metadataResolver.ResolveType(type);
             if (resolved == null)
                 throw new ArgumentException();
 
-            if (type is TypeSpecification spec && spec.Signature is GenericInstanceTypeSignature sig)
+            if (genSig != null)
             {
-                var gargs = sig.TypeArguments
+                var gargs = genSig.TypeArguments
                     .Select(ResolveSigCore)
                     .ToList();
                 return new ResolvedTypeReference(type, resolved, gargs);
@@ -78,13 +82,20 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        private IResolvedReference<IMethodDefOrRef>? TryResolveCore(IMethodDefOrRef method)
+        private IResolvedReference<IMethodDefOrRef> ResolveCore(IMethodDefOrRef method)
         {
             var resolved = _metadataResolver.ResolveMethod(method);
             if (resolved == null)
-                return null;
+                throw new ArgumentException();
 
-            return new ResolvedMethodReference(method, resolved);
+            if (method.DeclaringType is TypeSpecification spec && spec.Signature is GenericInstanceTypeSignature sig)
+            {
+                var gargs = sig.TypeArguments
+                    .Select(ResolveSigCore)
+                    .ToList();
+                return new ResolvedMethodReference(method, resolved, gargs);
+            }
+            return new ResolvedMethodReference(method, resolved, null);
         }
 
 
@@ -100,12 +111,16 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         private IResolvedReference<TypeSignature> ResolveSigCore(TypeSignature sig)
         {
+            var rootSig = GetRootSignature(sig);
+            if (rootSig is GenericParameterSignature)
+                return new ResolvedSignatureReference(sig, null, null);
+
             var resolved = _metadataResolver.ResolveType(sig);
+
             if (resolved == null)
                 throw new ArgumentException();
 
-            var gitSig = TraverseToGeneric(sig);
-            var gargs = gitSig?.TypeArguments
+            var gargs = (rootSig as GenericInstanceTypeSignature)?.TypeArguments
                 .Select(ResolveSigCore)
                 .ToList();
             return new ResolvedSignatureReference(sig, resolved, gargs);
@@ -113,21 +128,20 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             //return new NoResolveReference<TypeSignature>(sig);
         }
 
-        private GenericInstanceTypeSignature? TraverseToGeneric(TypeSignature sig)
+        private TypeSignature? GetRootSignature(TypeSignature sig)
         {
             switch (sig)
             {
                 case CorLibTypeSignature:
                 case TypeDefOrRefSignature:
                 case GenericParameterSignature:
-                    return null;
-                // TODO 
-                //case FunctionPointerTypeSignature fpSig:
-                //case SentinelParameterTypeSignature:
-                case GenericInstanceTypeSignature generic:
-                    return generic;
+                case GenericInstanceTypeSignature:
+                case FunctionPointerTypeSignature:
+                case SentinelTypeSignature:
+                    return sig;
+
                 case TypeSpecificationSignature arr:
-                    return TraverseToGeneric(arr.BaseType);
+                    return GetRootSignature(arr.BaseType);
             }
             throw new ArgumentException();
         }

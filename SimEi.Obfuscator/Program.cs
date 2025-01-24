@@ -11,13 +11,13 @@ namespace SimEi.Obfuscator
     {
         static void Main(string[] args)
         {
-            //if (args.Length == 1)
-            //{
-            //    Console.WriteLine("Error: no config specified.");
-            //    Environment.Exit(0);
-            //}
-            //string configPath = args[1];
-            string configPath = "config.xml";
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Error: no config specified.");
+                Environment.Exit(0);
+            }
+            string configPath = args[0];
+            //string configPath = "config.xml";
 
             ConfigDocument? config;
             var serialier = new XmlSerializer(typeof(ConfigDocument));

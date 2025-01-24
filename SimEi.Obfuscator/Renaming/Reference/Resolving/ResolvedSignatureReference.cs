@@ -6,14 +6,16 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
     internal class ResolvedSignatureReference : ResolvedReferenceBase<TypeSignature>
     {
         private readonly TypeSignature _originalSignature;
-        private readonly TypeDefinition _resolvedType;
+        private readonly TypeDefinition? _resolvedType;
+
         private readonly IEnumerable<IResolvedReference<TypeSignature>>? _genericArgs;
 
-        public ResolvedSignatureReference(TypeSignature originalSignature, TypeDefinition resolvedType,
+        public ResolvedSignatureReference(TypeSignature originalSignature, TypeDefinition? resolvedType,
             IEnumerable<IResolvedReference<TypeSignature>>? genericArgs)
         {
             _originalSignature = originalSignature;
             _resolvedType = resolvedType;
+
             _genericArgs = genericArgs;
         }
 
@@ -25,20 +27,20 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             switch (original)
             {
                 case GenericInstanceTypeSignature gitSig:
-                    var imported = original.Module!.DefaultImporter.ImportType(_resolvedType);
+                    var imported = original.Module!.DefaultImporter.ImportType(_resolvedType!);
                     var gargs = _genericArgs!
                         .Select(p => p.GetResolved())
                         .ToArray();
-                    return imported.MakeGenericInstanceType(gargs);
+                    return imported.MakeGenericInstanceType(original.IsValueType, gargs);
 
                 case TypeDefOrRefSignature:
                 case CorLibTypeSignature:
-                case GenericParameterSignature:
-                    return original.Module!.DefaultImporter.ImportType(_resolvedType).ToTypeSignature();
+                case FunctionPointerTypeSignature:
+                case SentinelTypeSignature:
+                    return original.Module!.DefaultImporter.ImportType(_resolvedType!).ToTypeSignature(original.IsValueType);
 
-                // TODO
-                //case FunctionPointerTypeSignature fpSig:
-                //case SentinelParameterTypeSignature:
+                case GenericParameterSignature:
+                    return original;
 
                 case SzArrayTypeSignature saSig:
                     return ResolveTraversing(saSig.BaseType).MakeSzArrayType();

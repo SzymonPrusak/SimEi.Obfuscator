@@ -39,28 +39,29 @@ namespace SimEi.Obfuscator.Renaming
             Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Executing renaming...");
             var compPerm = new CompositeRenamingPermissions(obfAttrPerm, _externalPermissions);
 
-            //var depMethodsNamingContext = new NamingContext("__");
-            //var modulesSet = modules.ToHashSet();
-            //foreach (var comp in msg.GetComponents())
-            //{
-            //    if (!comp.AreAllMethodsControlled(_metadataResolver, modulesSet)
-            //        || comp.Nodes.Any(n => !compPerm.CanRename(n)))
-            //        continue;
+            var depMethodsNamingContext = new NamingContext("__");
+            var modulesSet = modules.ToHashSet();
+            foreach (var comp in msg.GetComponents())
+            {
+                if (!comp.AreAllMethodsControlled(_metadataResolver, modulesSet)
+                    || comp.Nodes.Any(n => !compPerm.CanRename(n)))
+                    continue;
 
-            //    // TODO: find type components from method components and reset naming context for each.
-            //    string name = depMethodsNamingContext.GetNextName(null, RenamedElementType.Method);
-            //    foreach (var method in comp.Nodes)
-            //        method.Name = name;
-            //}
+                // TODO: find type components from method components and reset naming context for each.
+                string name = depMethodsNamingContext.GetNextName(null, RenamedElementType.Method);
+                // TODO: rename parameters
+                foreach (var method in comp.Nodes)
+                    method.Name = name;
+            }
 
-            //var excludeSigGraphPerm = new ConcreteExcludedPermissions(msg.Nodes);
-            //var finalPerm = new CompositeRenamingPermissions(compPerm, excludeSigGraphPerm);
-            //foreach (var module in modules)
-            //{
-            //    var namingContext = new NamingContext();
-            //    var renamer = new Renamer(namingContext, finalPerm);
-            //    Visit(module, renamer);
-            //}
+            var excludeSigGraphPerm = new ConcreteExcludedPermissions(msg.Nodes);
+            var finalPerm = new CompositeRenamingPermissions(compPerm, excludeSigGraphPerm);
+            foreach (var module in modules)
+            {
+                var namingContext = new NamingContext();
+                var renamer = new Renamer(namingContext, finalPerm);
+                Visit(module, renamer);
+            }
 
             Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Fixing references...");
             refTracker.FixTrackedReferences();
