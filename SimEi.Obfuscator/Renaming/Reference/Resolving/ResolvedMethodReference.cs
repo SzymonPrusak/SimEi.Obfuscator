@@ -33,7 +33,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
                     .ToArray();
                 var genericInstance = _resolved.DeclaringType!.MakeGenericInstanceType(args);
                 var targetType = new TypeSpecification(genericInstance);
-                resolved = new MemberReference(targetType, _original.Name, _resolved.Signature);
+                resolved = new MemberReference(targetType, _resolved.Name, _resolved.Signature);
             }
 
             if (_original is MethodSpecification mSpec)

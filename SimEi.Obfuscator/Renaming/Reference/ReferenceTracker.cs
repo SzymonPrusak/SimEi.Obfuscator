@@ -81,6 +81,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
                 // Tie methods that are possibly overriding base classes methods in signature graph.
 
+                // TODO: check why delegate methods does not get excluded by base class tying.
                 var baseClassVirtualMethods = type.BaseType!.GetAllMethodDefinitions(_metadataResolver)
                     .Where(entry => !entry.Item2.IsStatic && entry.Item2.IsVirtual && !entry.Item2.IsFinal)
                     .GroupBy(entry => entry.Item1)
