@@ -88,8 +88,6 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             if (resolved == null)
                 throw new ArgumentException();
 
-            // TODO: method signatures need to be resolved as well - they can have types from another assemblies
-            //  that won't be updated automatically.
             IEnumerable<IResolvedReference<TypeSignature>>? gtArgs = null;
             if (method.DeclaringType is TypeSpecification tSpec && tSpec.Signature is GenericInstanceTypeSignature gtSig)
             {
@@ -114,7 +112,6 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             if (resolved == null)
                 throw new ArgumentException();
 
-            // TODO: field signatures need to be resolved as well.
             return new ResolvedFieldReference(field, resolved);
         }
 

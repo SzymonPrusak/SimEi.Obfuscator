@@ -17,6 +17,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
 
         protected override IFieldDescriptor Resolve()
         {
+            // TODO: test if it's working for fields with type of generic parameter with class which is renamed
             IFieldDescriptor resolved = _resolved;
             if (_original.DeclaringType is TypeSpecification typeSpec)
             {

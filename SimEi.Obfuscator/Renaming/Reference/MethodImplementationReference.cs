@@ -21,7 +21,6 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         public void Fix()
         {
-            // TODO: method implementations require signature resolving.
             var impl = _type.MethodImplementations[_index];
             var resolved = _resolved.GetResolved();
             _type.MethodImplementations[_index] = new MethodImplementation((IMethodDefOrRef)resolved, impl.Body);
