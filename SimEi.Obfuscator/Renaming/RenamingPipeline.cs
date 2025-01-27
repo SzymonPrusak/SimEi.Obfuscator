@@ -21,12 +21,12 @@ namespace SimEi.Obfuscator.Renaming
 
         public void Rename(IEnumerable<ModuleDefinition> modules)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Start renaming...");
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Renamed modules:");
+            Logger.Log("Start renaming...");
+            Logger.Log("Renamed modules:");
             foreach (var module in modules)
-                Console.WriteLine($"  - {module.Name}");
+                Logger.Log($"  - {module.Name}", false);
 
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Finding references...");
+            Logger.Log("Finding references...");
             var msg = new MethodSigGraph();
             var refTracker = new ReferenceTracker(_metadataResolver, msg);
             var obfAttrPerm = new ObfuscationAttributePermissions();
@@ -35,9 +35,9 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, refTracker);
                 Visit(module, obfAttrPerm);
             }
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Found {refTracker.ReferenceCount} references.");
+            Logger.Log($"Found {refTracker.ReferenceCount} references.");
 
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Executing renaming...");
+            Logger.Log("Executing renaming...");
             var runtimePerm = new RuntimeExcludedPermissions();
             var compPerm = new CompositeRenamingPermissions(obfAttrPerm, runtimePerm, _externalPermissions);
             RenameVirtualMethods(msg, modules, compPerm);
@@ -51,12 +51,12 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, renamer);
             }
 
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Fixing references...");
+            Logger.Log("Fixing references...");
             refTracker.FixTrackedReferences();
 
             // TODO: create name mapping for stacktrace deobfuscation.
 
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Done!");
+            Logger.Log("Done!");
         }
 
 

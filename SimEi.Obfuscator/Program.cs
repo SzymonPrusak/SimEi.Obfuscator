@@ -51,7 +51,7 @@ namespace SimEi.Obfuscator
             var renaming = new RenamingPipeline(metadataResolver, configPerm);
             renaming.Rename(modules);
 
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Saving output files to {Environment.CurrentDirectory}");
+            Logger.Log($"Saving output files to {Environment.CurrentDirectory}");
 
             foreach (var lib in asms)
                 lib.Write(lib.Name + ".dll");
