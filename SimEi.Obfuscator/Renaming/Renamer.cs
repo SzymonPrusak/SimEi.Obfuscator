@@ -17,7 +17,7 @@ namespace SimEi.Obfuscator.Renaming
 
         public override void VisitType(TypeDefinition type, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            if (type.IsModuleType || !_permissions.CanRename(type) || type.Namespace == "Microsoft.CodeAnalysis")
+            if (!_permissions.CanRename(type))
                 return;
 
             type.Name = _namingContext.GetNextName(type.DeclaringType, RenamedElementType.Type);

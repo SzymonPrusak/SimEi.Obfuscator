@@ -8,7 +8,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
         private readonly TypeDefinition _type;
         private readonly int _index;
 
-        private readonly IResolvedReference<IMethodDefOrRef> _resolved;
+        private readonly IResolvedReference<IMethodDescriptor> _resolved;
 
         public MethodImplementationReference(TypeDefinition type, int index, ReferenceResolver resolver)
         {
@@ -23,7 +23,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
         {
             var impl = _type.MethodImplementations[_index];
             var resolved = _resolved.GetResolved();
-            _type.MethodImplementations[_index] = new MethodImplementation(resolved, impl.Body);
+            _type.MethodImplementations[_index] = new MethodImplementation((IMethodDefOrRef)resolved, impl.Body);
         }
     }
 }

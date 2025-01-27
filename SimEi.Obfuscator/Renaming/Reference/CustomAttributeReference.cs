@@ -8,7 +8,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
     {
         private readonly CustomAttribute _attribute;
 
-        private readonly IResolvedReference<IMethodDefOrRef> _resolved;
+        private readonly IResolvedReference<IMethodDescriptor> _resolved;
         private readonly IEnumerable<IEnumerable<IResolvedReference<TypeSignature>?>> _fixedTypeArgs;
         private readonly IEnumerable<IEnumerable<IResolvedReference<TypeSignature>?>> _namedTypeArgs;
 

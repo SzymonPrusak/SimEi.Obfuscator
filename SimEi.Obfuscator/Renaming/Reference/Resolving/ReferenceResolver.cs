@@ -8,7 +8,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         private readonly IMetadataResolver _metadataResolver;
 
         private readonly Dictionary<ITypeDefOrRef, IResolvedReference<ITypeDefOrRef>> _typeCache;
-        private readonly Dictionary<IMethodDefOrRef, IResolvedReference<IMethodDefOrRef>> _methodCache;
+        private readonly Dictionary<IMethodDescriptor, IResolvedReference<IMethodDescriptor>> _methodCache;
         private readonly Dictionary<IFieldDescriptor, IResolvedReference<IFieldDescriptor>> _fieldCache;
         private readonly Dictionary<TypeSignature, IResolvedReference<TypeSignature>> _sigCache;
 
@@ -32,7 +32,7 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        public IResolvedReference<IMethodDefOrRef> Resolve(IMethodDefOrRef method)
+        public IResolvedReference<IMethodDescriptor> Resolve(IMethodDescriptor method)
         {
             if (_methodCache.TryGetValue(method, out var r))
                 return r;
@@ -82,20 +82,27 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
         }
 
 
-        private IResolvedReference<IMethodDefOrRef> ResolveCore(IMethodDefOrRef method)
+        private IResolvedReference<IMethodDescriptor> ResolveCore(IMethodDescriptor method)
         {
             var resolved = _metadataResolver.ResolveMethod(method);
             if (resolved == null)
                 throw new ArgumentException();
 
-            if (method.DeclaringType is TypeSpecification spec && spec.Signature is GenericInstanceTypeSignature sig)
+            IEnumerable<IResolvedReference<TypeSignature>>? gtArgs = null;
+            if (method.DeclaringType is TypeSpecification tSpec && tSpec.Signature is GenericInstanceTypeSignature gtSig)
             {
-                var gargs = sig.TypeArguments
+                gtArgs = gtSig.TypeArguments
                     .Select(ResolveSigCore)
                     .ToList();
-                return new ResolvedMethodReference(method, resolved, gargs);
             }
-            return new ResolvedMethodReference(method, resolved, null);
+            IEnumerable<IResolvedReference<TypeSignature>>? gmArgs = null;
+            if (method is MethodSpecification mSpec)
+            {
+                gmArgs = mSpec.Signature!.TypeArguments
+                    .Select(ResolveSigCore)
+                    .ToList();
+            }
+            return new ResolvedMethodReference(method, resolved, gtArgs, gmArgs);
         }
 
 
@@ -105,7 +112,14 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             if (resolved == null)
                 throw new ArgumentException();
 
-            return new ResolvedFieldReference(field, resolved);
+            IEnumerable<IResolvedReference<TypeSignature>>? gtArgs = null;
+            if (field.DeclaringType is TypeSpecification tSpec && tSpec.Signature is GenericInstanceTypeSignature gtSig)
+            {
+                gtArgs = gtSig.TypeArguments
+                    .Select(ResolveSigCore)
+                    .ToList();
+            }
+            return new ResolvedFieldReference(field, resolved, gtArgs);
         }
 
 
@@ -124,8 +138,6 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
                 .Select(ResolveSigCore)
                 .ToList();
             return new ResolvedSignatureReference(sig, resolved, gargs);
-
-            //return new NoResolveReference<TypeSignature>(sig);
         }
 
         private TypeSignature? GetRootSignature(TypeSignature sig)

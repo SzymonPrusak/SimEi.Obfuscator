@@ -14,8 +14,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
         {
             _instruction = instruction;
 
-            var mr = (MemberReference)instruction.Operand!;
-            _fieldRef = resolver.Resolve((IFieldDescriptor)mr);
+            _fieldRef = resolver.Resolve((IFieldDescriptor)instruction.Operand!);
         }
 
 

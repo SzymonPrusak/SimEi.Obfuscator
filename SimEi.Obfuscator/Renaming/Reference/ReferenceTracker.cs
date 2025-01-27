@@ -14,7 +14,8 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         private readonly MethodSigGraph _methodSigGraph;
 
-        private readonly List<ITrackedReference> _trackedReferences;
+        private readonly List<ITrackedReference> _definitionReferences;
+        private readonly List<ITrackedReference> _referenceReferences;
 
         public ReferenceTracker(IMetadataResolver metadataResolver, MethodSigGraph methodSigGraph)
         {
@@ -23,35 +24,38 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
             _methodSigGraph = methodSigGraph;
 
-            _trackedReferences = [];
+            _definitionReferences = new();
+            _referenceReferences = new();
         }
 
 
 
-        public int ReferenceCount => _trackedReferences.Count;
+        public int ReferenceCount => _definitionReferences.Count + _referenceReferences.Count;
 
 
 
         public void FixTrackedReferences()
         {
-            foreach (var r in _trackedReferences)
+            foreach (var r in _definitionReferences)
+                r.Fix();
+            foreach (var r in _referenceReferences)
                 r.Fix();
         }
 
 
         public override void VisitType(TypeDefinition type, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            _trackedReferences.Add(new TypeSignatureReference(type, _referenceResolver));
+            _definitionReferences.Add(new TypeSignatureReference(type, _referenceResolver));
 
             foreach (var gparam in type.GenericParameters)
-                _trackedReferences.Add(new GenericParameterReference(gparam, _referenceResolver));
+                _definitionReferences.Add(new GenericParameterReference(gparam, _referenceResolver));
 
             VisitAttributes(type);
 
             // TODO: track default member (for indexer)
 
             for (int i = 0; i < type.MethodImplementations.Count; i++)
-                _trackedReferences.Add(new MethodImplementationReference(type, i, _referenceResolver));
+                _referenceReferences.Add(new MethodImplementationReference(type, i, _referenceResolver));
 
             if (!type.IsInterface)
             {
@@ -102,38 +106,38 @@ namespace SimEi.Obfuscator.Renaming.Reference
 
         public override void VisitField(FieldDefinition field, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            _trackedReferences.Add(new FieldSignatureReference(field.Signature!, _referenceResolver));
+            _definitionReferences.Add(new FieldSignatureReference(field.Signature!, _referenceResolver));
 
             VisitAttributes(field);
         }
 
         public override void VisitProp(PropertyDefinition prop, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            _trackedReferences.Add(new PropSignatureReference(prop.Signature!, _referenceResolver));
+            _definitionReferences.Add(new PropSignatureReference(prop.Signature!, _referenceResolver));
 
             VisitAttributes(prop);
         }
 
         public override void VisitEvent(EventDefinition evt, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            _trackedReferences.Add(new EventDelegateReference(evt, _referenceResolver));
+            _definitionReferences.Add(new EventDelegateReference(evt, _referenceResolver));
 
             VisitAttributes(evt);
         }
 
         public override void VisitMethod(MethodDefinition method, IReadOnlyList<TypeDefinition> declaringTypes)
         {
-            _trackedReferences.Add(new MethodSignatureReference(method, _referenceResolver));
+            _definitionReferences.Add(new MethodSignatureReference(method, _referenceResolver));
 
             foreach (var gparam in method.GenericParameters)
-                _trackedReferences.Add(new GenericParameterReference(gparam, _referenceResolver));
+                _definitionReferences.Add(new GenericParameterReference(gparam, _referenceResolver));
 
             VisitAttributes(method);
         }
 
         public override void VisitLocal(CilLocalVariable local)
         {
-            _trackedReferences.Add(new LocalSignatureReference(local, _referenceResolver));
+            _definitionReferences.Add(new LocalSignatureReference(local, _referenceResolver));
         }
 
         public override void VisitInstruction(CilInstruction instruction)
@@ -141,30 +145,30 @@ namespace SimEi.Obfuscator.Renaming.Reference
             if (instruction.Operand is MemberReference mr)
             {
                 if (mr.IsMethod)
-                    _trackedReferences.Add(new InstructionMethodReference(instruction, _referenceResolver));
+                    _referenceReferences.Add(new InstructionMethodReference(instruction, _referenceResolver));
                 else
-                    _trackedReferences.Add(new InstructionFieldReference(instruction, _referenceResolver));
+                    _referenceReferences.Add(new InstructionFieldReference(instruction, _referenceResolver));
             }
-            else if (instruction.Operand is MethodSpecification)
+            else if (instruction.Operand is IMethodDescriptor)
             {
-                _trackedReferences.Add(new InstructionMethodSpecReference(instruction, _referenceResolver));
+                _referenceReferences.Add(new InstructionMethodReference(instruction, _referenceResolver));
             }
             else if (instruction.Operand is ITypeDefOrRef type)
             {
-                _trackedReferences.Add(new InstructionTypeReference(instruction, _referenceResolver));
+                _referenceReferences.Add(new InstructionTypeReference(instruction, _referenceResolver));
             }
         }
 
         public override void VisitExceptionHandler(CilExceptionHandler excHandler)
         {
-            _trackedReferences.Add(new ExceptionSignatureReference(excHandler, _referenceResolver));
+            _referenceReferences.Add(new ExceptionSignatureReference(excHandler, _referenceResolver));
         }
 
 
         private void VisitAttributes(IHasCustomAttribute member)
         {
             foreach (var attr in member.CustomAttributes)
-                _trackedReferences.Add(new CustomAttributeReference(attr, _referenceResolver));
+                _referenceReferences.Add(new CustomAttributeReference(attr, _referenceResolver));
         }
     }
 }

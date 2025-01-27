@@ -23,17 +23,7 @@ namespace SimEi.Obfuscator.Config
         public string? SubtypeOf { get; set; }
 
 
-        [XmlIgnore]
-        public bool? SkipMembers { get; set; }
-        [XmlAttribute(nameof(SkipMembers))]
-        public string? SkipMembersStr
-        {
-            get => SkipMembers?.ToString();
-            set { SkipMembers = value != null ? bool.Parse(value) : null; }
-        }
-
-
         [XmlElement("ExcludeMember")]
-        public List<MemberInfo>? ExplicitMembers { get; set; }
+        public List<MemberInfo>? Members { get; set; }
     }
 }

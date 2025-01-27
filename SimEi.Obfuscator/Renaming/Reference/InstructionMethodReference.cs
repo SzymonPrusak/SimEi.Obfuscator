@@ -8,14 +8,13 @@ namespace SimEi.Obfuscator.Renaming.Reference
     {
         private readonly CilInstruction _instruction;
 
-        private readonly IResolvedReference<IMethodDefOrRef> _methodRef;
+        private readonly IResolvedReference<IMethodDescriptor> _methodRef;
 
         public InstructionMethodReference(CilInstruction instruction, ReferenceResolver resolver)
         {
             _instruction = instruction;
 
-            var mr = (MemberReference)instruction.Operand!;
-            _methodRef = resolver.Resolve((IMethodDefOrRef)mr);
+            _methodRef = resolver.Resolve((IMethodDescriptor)instruction.Operand!);
         }
 
 

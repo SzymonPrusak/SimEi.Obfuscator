@@ -1,4 +1,5 @@
-﻿using AsmResolver.DotNet;
+﻿using System.Reflection;
+using AsmResolver.DotNet;
 using SimEi.Obfuscator.Renaming.Permission;
 using SimEi.Obfuscator.Renaming.Reference;
 using SimEi.Obfuscator.Renaming.SigGraph;
@@ -20,12 +21,12 @@ namespace SimEi.Obfuscator.Renaming
 
         public void Rename(IEnumerable<ModuleDefinition> modules)
         {
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Start renaming...");
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Renamed modules:");
+            Logger.Log("Start renaming...");
+            Logger.Log("Renamed modules:");
             foreach (var module in modules)
-                Console.WriteLine($"  - {module.Name}");
+                Logger.Log($"  - {module.Name}", false);
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Finding references...");
+            Logger.Log("Finding references...");
             var msg = new MethodSigGraph();
             var refTracker = new ReferenceTracker(_metadataResolver, msg);
             var obfAttrPerm = new ObfuscationAttributePermissions();
@@ -34,25 +35,12 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, refTracker);
                 Visit(module, obfAttrPerm);
             }
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Found {refTracker.ReferenceCount} references.");
+            Logger.Log($"Found {refTracker.ReferenceCount} references.");
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Executing renaming...");
-            var compPerm = new CompositeRenamingPermissions(obfAttrPerm, _externalPermissions);
-
-            var depMethodsNamingContext = new NamingContext("__");
-            var modulesSet = modules.ToHashSet();
-            foreach (var comp in msg.GetComponents())
-            {
-                if (!comp.AreAllMethodsControlled(_metadataResolver, modulesSet)
-                    || comp.Nodes.Any(n => !compPerm.CanRename(n)))
-                    continue;
-
-                // TODO: find type components from method components and reset naming context for each.
-                string name = depMethodsNamingContext.GetNextName(null, RenamedElementType.Method);
-                // TODO: rename parameters
-                foreach (var method in comp.Nodes)
-                    method.Name = name;
-            }
+            Logger.Log("Executing renaming...");
+            var runtimePerm = new RuntimeExcludedPermissions();
+            var compPerm = new CompositeRenamingPermissions(obfAttrPerm, runtimePerm, _externalPermissions);
+            RenameVirtualMethods(msg, modules, compPerm);
 
             var excludeSigGraphPerm = new ConcreteExcludedPermissions(msg.Nodes);
             var finalPerm = new CompositeRenamingPermissions(compPerm, excludeSigGraphPerm);
@@ -63,10 +51,12 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(module, renamer);
             }
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Fixing references...");
+            Logger.Log("Fixing references...");
             refTracker.FixTrackedReferences();
 
-            Console.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Done!");
+            // TODO: create name mapping for stacktrace deobfuscation.
+
+            Logger.Log("Done!");
         }
 
 
@@ -110,6 +100,34 @@ namespace SimEi.Obfuscator.Renaming
                 Visit(st, visitor, declaringTypes);
 
             declaringTypes.RemoveAt(declaringTypes.Count - 1);
+        }
+
+
+        private void RenameVirtualMethods(MethodSigGraph virtMethodGraph, IEnumerable<ModuleDefinition> modules,
+            IRenamingPermissions permissions)
+        {
+            var depMethodsNamingContext = new NamingContext("__");
+            var modulesSet = modules.ToHashSet();
+            foreach (var comp in virtMethodGraph.GetComponents())
+            {
+                if (!comp.AreAllMethodsControlled(_metadataResolver, modulesSet)
+                    || comp.Nodes.Any(n => !permissions.CanRename(n)))
+                    continue;
+
+                // TODO: find type components from method components and reset naming context for each.
+                string name = depMethodsNamingContext.GetNextName(null, RenamedElementType.Method);
+                foreach (var method in comp.Nodes)
+                {
+                    method.Name = name;
+                    foreach (var param in method.ParameterDefinitions)
+                    {
+                        if (permissions.CanRename(param))
+                            param.Name = null;
+                    }
+                    foreach (var gparam in method.GenericParameters)
+                        gparam.Name = depMethodsNamingContext.GetNextName(method.DeclaringType, RenamedElementType.GenericParameter);
+                }
+            }
         }
     }
 }
