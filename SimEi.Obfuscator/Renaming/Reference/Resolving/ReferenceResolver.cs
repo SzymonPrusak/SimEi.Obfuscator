@@ -112,7 +112,14 @@ namespace SimEi.Obfuscator.Renaming.Reference.Resolving
             if (resolved == null)
                 throw new ArgumentException();
 
-            return new ResolvedFieldReference(field, resolved);
+            IEnumerable<IResolvedReference<TypeSignature>>? gtArgs = null;
+            if (field.DeclaringType is TypeSpecification tSpec && tSpec.Signature is GenericInstanceTypeSignature gtSig)
+            {
+                gtArgs = gtSig.TypeArguments
+                    .Select(ResolveSigCore)
+                    .ToList();
+            }
+            return new ResolvedFieldReference(field, resolved, gtArgs);
         }
 
 
