@@ -11,10 +11,10 @@ namespace SimEi.Obfuscator.Config
         [XmlElement("ProbePath")]
         public List<ProbePath> ProbePaths { get; set; } = new List<ProbePath>();
 
-        [XmlElement("Assembly")]
-        public List<AssemblyXml> Assemblies { get; set; } = new List<AssemblyXml>();
+        [XmlElement("Module")]
+        public List<Module> Modules { get; set; } = new List<Module>();
 
         [XmlArray]
-        public List<ExcludeClass> GlobalExcludes { get; set; } = new List<ExcludeClass>();
+        public List<Rule> GlobalRules { get; set; } = new List<Rule>();
     }
 }

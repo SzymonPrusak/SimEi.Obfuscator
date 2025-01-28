@@ -3,7 +3,7 @@ using AsmResolver.DotNet;
 using AsmResolver.DotNet.Serialized;
 using SimEi.Obfuscator.Config;
 using SimEi.Obfuscator.Renaming;
-using SimEi.Obfuscator.Renaming.Permission;
+using SimEi.Obfuscator.Renaming.Permission.Config;
 
 namespace SimEi.Obfuscator
 {
@@ -36,7 +36,7 @@ namespace SimEi.Obfuscator
             var mrp = new ModuleReaderParameters(rtCtx);
 
             string basePath = config.BaseDir!.Value;
-            var asms = config.Assemblies.Select(a => a.Path)
+            var asms = config.Modules.Select(a => a.Name)
                 .Select(p => AssemblyDefinition.FromFile(Path.Combine(basePath, p), mrp))
                 .ToList();
 
