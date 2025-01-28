@@ -43,7 +43,7 @@ namespace SimEi.Obfuscator.Renaming.Reference
         }
 
 
-        public override void VisitType(TypeDefinition type, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitType(TypeDefinition type)
         {
             _definitionReferences.Add(new TypeSignatureReference(type, _referenceResolver));
 
@@ -104,28 +104,28 @@ namespace SimEi.Obfuscator.Renaming.Reference
             }
         }
 
-        public override void VisitField(FieldDefinition field, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitField(FieldDefinition field)
         {
             _definitionReferences.Add(new FieldSignatureReference(field.Signature!, _referenceResolver));
 
             VisitAttributes(field);
         }
 
-        public override void VisitProp(PropertyDefinition prop, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitProp(PropertyDefinition prop)
         {
             _definitionReferences.Add(new PropSignatureReference(prop.Signature!, _referenceResolver));
 
             VisitAttributes(prop);
         }
 
-        public override void VisitEvent(EventDefinition evt, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitEvent(EventDefinition evt)
         {
             _definitionReferences.Add(new EventDelegateReference(evt, _referenceResolver));
 
             VisitAttributes(evt);
         }
 
-        public override void VisitMethod(MethodDefinition method, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitMethod(MethodDefinition method)
         {
             _definitionReferences.Add(new MethodSignatureReference(method, _referenceResolver));
 

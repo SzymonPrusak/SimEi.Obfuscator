@@ -6,14 +6,14 @@ namespace SimEi.Obfuscator.Renaming
     {
         private readonly string _prefix;
         private readonly NamingLevel _moduleNaming;
-        private readonly Dictionary<TypeDefinition, NamingLevel> _subTypeNamings;
+        private readonly Dictionary<TypeDefinition, NamingLevel> _nestedTypeNamings;
 
         public NamingContext(string prefix = "_")
         {
             _prefix = prefix;
 
             _moduleNaming = new NamingLevel();
-            _subTypeNamings = new Dictionary<TypeDefinition, NamingLevel>();
+            _nestedTypeNamings = new Dictionary<TypeDefinition, NamingLevel>();
         }
 
 
@@ -24,10 +24,10 @@ namespace SimEi.Obfuscator.Renaming
                 name = _moduleNaming.GetNextName(elType);
             else
             {
-                if (!_subTypeNamings.TryGetValue(type, out var level))
+                if (!_nestedTypeNamings.TryGetValue(type, out var level))
                 {
                     level = new NamingLevel();
-                    _subTypeNamings[type] = level;
+                    _nestedTypeNamings[type] = level;
                 }
                 name = level.GetNextName(elType);
             }
@@ -37,8 +37,7 @@ namespace SimEi.Obfuscator.Renaming
 
         private class NamingLevel
         {
-            //private const string AllChars = "ㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅥㅦㅧㅨㅩㅪㅫㅬㅭㅮㅯㅰㅱㅲㅳㅴㅵㅶㅷㅸㅹㅺㅻㅼㅽㅾㅿㆀㆁㆂㆃㆄㆅㆆㆇㆈㆉㆊ㊐㊑㊒㊓㊔㊕㊊㊋㊌㊍㊎㊏㊖㊗㊞㊟㊠㊡㊢㊣㊤㊥㊦㊘㊙㊚㊛㊜㊝㊧㊨㊩㊪㊫㊬㊭㊰㊮㊯ッツヅミテデトドナぁあぃいぅうぇえぉおかがきぎけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖ゛゜ゝゞゟ゠ァアィイカガキギクグケゲコゴサザシジスズセゼソゾタダチヂニヌネノハバパヒビピフブプヘベペホボポマムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶヷヸヹヺヾくぐゥウェエォオ";
-            private const string AllChars = "ABCDEFGHIJK";
+            private const string AllChars = "ㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅥㅦㅧㅨㅩㅪㅫㅬㅭㅮㅯㅰㅱㅲㅳㅴㅵㅶㅷㅸㅹㅺㅻㅼㅽㅾㅿㆀㆁㆂㆃㆄㆅㆆㆇㆈㆉㆊ㊐㊑㊒㊓㊔㊕㊊㊋㊌㊍㊎㊏㊖㊗㊞㊟㊠㊡㊢㊣㊤㊥㊦㊘㊙㊚㊛㊜㊝㊧㊨㊩㊪㊫㊬㊭㊰㊮㊯ッツヅミテデトドナぁあぃいぅうぇえぉおかがきぎけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖ゛゜ゝゞゟ゠ァアィイカガキギクグケゲコゴサザシジスズセゼソゾタダチヂニヌネノハバパヒビピフブプヘベペホボポマムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶヷヸヹヺヾくぐゥウェエォオ";
 
             private readonly Dictionary<RenamedElementType, (char[], int)> _elNamings;
 

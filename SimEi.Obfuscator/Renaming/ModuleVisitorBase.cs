@@ -6,11 +6,11 @@ namespace SimEi.Obfuscator.Renaming
 {
     internal class ModuleVisitorBase : IModuleVisitor
     {
-        public virtual void VisitType(TypeDefinition type, IReadOnlyList<TypeDefinition> declaringTypes) { }
-        public virtual void VisitField(FieldDefinition field, IReadOnlyList<TypeDefinition> declaringTypes) { }
-        public virtual void VisitProp(PropertyDefinition prop, IReadOnlyList<TypeDefinition> declaringTypes) { }
-        public virtual void VisitEvent(EventDefinition evt, IReadOnlyList<TypeDefinition> declaringTypes) { }
-        public virtual void VisitMethod(MethodDefinition method, IReadOnlyList<TypeDefinition> declaringTypes) { }
+        public virtual void VisitType(TypeDefinition type) { }
+        public virtual void VisitField(FieldDefinition field) { }
+        public virtual void VisitProp(PropertyDefinition prop) { }
+        public virtual void VisitEvent(EventDefinition evt) { }
+        public virtual void VisitMethod(MethodDefinition method) { }
 
         public virtual void VisitLocal(CilLocalVariable local) { }
         public virtual void VisitInstruction(CilInstruction instruction) { }

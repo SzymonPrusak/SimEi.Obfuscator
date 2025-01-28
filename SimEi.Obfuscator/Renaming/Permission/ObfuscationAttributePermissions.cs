@@ -16,29 +16,29 @@ namespace SimEi.Obfuscator.Renaming.Permission
         public bool CanRename(IMetadataMember member) => !_excluded.ContainsKey(member);
 
 
-        public override void VisitType(TypeDefinition type, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitType(TypeDefinition type)
         {
-            VisitMember(type, declaringTypes.Count > 0 ? declaringTypes[^1] : null);
+            VisitMember(type, type.DeclaringType);
         }
 
-        public override void VisitField(FieldDefinition field, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitField(FieldDefinition field)
         {
-            VisitMember(field, declaringTypes[^1]);
+            VisitMember(field, field.DeclaringType);
         }
 
-        public override void VisitProp(PropertyDefinition prop, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitProp(PropertyDefinition prop)
         {
-            VisitMember(prop, declaringTypes[^1]);
+            VisitMember(prop, prop.DeclaringType);
         }
 
-        public override void VisitEvent(EventDefinition evt, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitEvent(EventDefinition evt)
         {
-            VisitMember(evt, declaringTypes[^1]);
+            VisitMember(evt, evt.DeclaringType);
         }
 
-        public override void VisitMethod(MethodDefinition method, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitMethod(MethodDefinition method)
         {
-            VisitMember(method, declaringTypes[^1]);
+            VisitMember(method, method.DeclaringType);
             foreach (var param in method.ParameterDefinitions)
                 VisitMember(param, method);
         }

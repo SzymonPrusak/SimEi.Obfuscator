@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using AsmResolver.DotNet;
+﻿using AsmResolver.DotNet;
 using SimEi.Obfuscator.Renaming.Permission;
 using SimEi.Obfuscator.Renaming.Reference;
+using SimEi.Obfuscator.Renaming.RenameLog;
 using SimEi.Obfuscator.Renaming.SigGraph;
 
 namespace SimEi.Obfuscator.Renaming
@@ -19,7 +19,7 @@ namespace SimEi.Obfuscator.Renaming
 
 
 
-        public void Rename(IEnumerable<ModuleDefinition> modules)
+        public void Rename(IEnumerable<ModuleDefinition> modules, IRenamingLogger logger)
         {
             Logger.Log("Start renaming...");
             Logger.Log("Renamed modules:");
@@ -42,19 +42,15 @@ namespace SimEi.Obfuscator.Renaming
             var compPerm = new CompositeRenamingPermissions(obfAttrPerm, runtimePerm, _externalPermissions);
             RenameVirtualMethods(msg, modules, compPerm);
 
+            var namingContext = new NamingContext();
             var excludeSigGraphPerm = new ConcreteExcludedPermissions(msg.Nodes);
             var finalPerm = new CompositeRenamingPermissions(compPerm, excludeSigGraphPerm);
+            var renamer = new Renamer(namingContext, finalPerm, logger);
             foreach (var module in modules)
-            {
-                var namingContext = new NamingContext();
-                var renamer = new Renamer(namingContext, finalPerm);
                 Visit(module, renamer);
-            }
 
             Logger.Log("Fixing references...");
             refTracker.FixTrackedReferences();
-
-            // TODO: create name mapping for stacktrace deobfuscation.
 
             Logger.Log("Done!");
         }
@@ -62,27 +58,24 @@ namespace SimEi.Obfuscator.Renaming
 
         private void Visit(ModuleDefinition module, IModuleVisitor visitor)
         {
-            var declaringTypes = new List<TypeDefinition>();
             foreach (var type in module.TopLevelTypes)
-                Visit(type, visitor, declaringTypes);
+                Visit(type, visitor);
         }
 
-        private void Visit(TypeDefinition type, IModuleVisitor visitor, List<TypeDefinition> declaringTypes)
+        private void Visit(TypeDefinition type, IModuleVisitor visitor)
         {
-            visitor.VisitType(type, declaringTypes);
-
-            declaringTypes.Add(type);
+            visitor.VisitType(type);
 
             foreach (var field in type.Fields)
-                visitor.VisitField(field, declaringTypes);
+                visitor.VisitField(field);
             foreach (var prop in type.Properties)
-                visitor.VisitProp(prop, declaringTypes);
+                visitor.VisitProp(prop);
             foreach (var evt in type.Events)
-                visitor.VisitEvent(evt, declaringTypes);
+                visitor.VisitEvent(evt);
 
             foreach (var method in type.Methods)
             {
-                visitor.VisitMethod(method, declaringTypes);
+                visitor.VisitMethod(method);
 
                 if (method.CilMethodBody == null)
                     continue;
@@ -97,9 +90,7 @@ namespace SimEi.Obfuscator.Renaming
             }
 
             foreach (var st in type.NestedTypes)
-                Visit(st, visitor, declaringTypes);
-
-            declaringTypes.RemoveAt(declaringTypes.Count - 1);
+                Visit(st, visitor);
         }
 
 

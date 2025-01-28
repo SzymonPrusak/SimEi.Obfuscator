@@ -1,5 +1,6 @@
 ﻿using AsmResolver.DotNet;
 using SimEi.Obfuscator.Renaming.Permission;
+using SimEi.Obfuscator.Renaming.RenameLog;
 
 namespace SimEi.Obfuscator.Renaming
 {
@@ -7,18 +8,22 @@ namespace SimEi.Obfuscator.Renaming
     {
         private readonly INamingContext _namingContext;
         private readonly IRenamingPermissions _permissions;
+        private readonly IRenamingLogger _logger;
 
-        public Renamer(INamingContext namingContext, IRenamingPermissions permissions)
+        public Renamer(INamingContext namingContext, IRenamingPermissions permissions, IRenamingLogger logger)
         {
             _namingContext = namingContext;
             _permissions = permissions;
+            _logger = logger;
         }
 
 
-        public override void VisitType(TypeDefinition type, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitType(TypeDefinition type)
         {
             if (!_permissions.CanRename(type))
                 return;
+
+            _logger.Track(type);
 
             type.Name = _namingContext.GetNextName(type.DeclaringType, RenamedElementType.Type);
             type.Namespace = null;
@@ -27,31 +32,40 @@ namespace SimEi.Obfuscator.Renaming
                 gparam.Name = _namingContext.GetNextName(type, RenamedElementType.GenericParameter);
         }
 
-        public override void VisitField(FieldDefinition field, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitField(FieldDefinition field)
         {
             if (!_permissions.CanRename(field))
                 return;
 
-            field.Name = _namingContext.GetNextName(field.DeclaringType, RenamedElementType.Field);
+            _logger.Track(field);
+
+            if (!field.IsSpecialName && !field.IsRuntimeSpecialName)
+                field.Name = _namingContext.GetNextName(field.DeclaringType, RenamedElementType.Field);
         }
 
-        public override void VisitProp(PropertyDefinition prop, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitProp(PropertyDefinition prop)
         {
             if (!_permissions.CanRename(prop))
                 return;
 
-            prop.Name = _namingContext.GetNextName(prop.DeclaringType, RenamedElementType.Property);
+            _logger.Track(prop);
+
+            if (!prop.IsSpecialName && !prop.IsRuntimeSpecialName)
+                prop.Name = _namingContext.GetNextName(prop.DeclaringType, RenamedElementType.Property);
         }
 
-        public override void VisitEvent(EventDefinition evt, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitEvent(EventDefinition evt)
         {
             if (!_permissions.CanRename(evt))
                 return;
 
-            evt.Name = _namingContext.GetNextName(evt.DeclaringType, RenamedElementType.Event);
+            _logger.Track(evt);
+
+            if (!evt.IsSpecialName && !evt.IsRuntimeSpecialName)
+                evt.Name = _namingContext.GetNextName(evt.DeclaringType, RenamedElementType.Event);
         }
 
-        public override void VisitMethod(MethodDefinition method, IReadOnlyList<TypeDefinition> declaringTypes)
+        public override void VisitMethod(MethodDefinition method)
         {
             foreach (var param in method.ParameterDefinitions)
             {
@@ -64,7 +78,9 @@ namespace SimEi.Obfuscator.Renaming
             if (!_permissions.CanRename(method))
                 return;
 
-            if (!method.IsConstructor)
+            _logger.Track(method);
+
+            if (!method.IsSpecialName && !method.IsRuntimeSpecialName)
                 method.Name = _namingContext.GetNextName(method.DeclaringType, RenamedElementType.Method);
 
             foreach (var gparam in method.GenericParameters)

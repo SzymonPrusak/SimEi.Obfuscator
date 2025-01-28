@@ -69,8 +69,9 @@ namespace SimEi.Obfuscator.Renaming.Permission.Config
             {
                 string fname = member switch
                 {
-                    IFullNameProvider fnp => fnp.FullName,
-                    ParameterDefinition pd => pd.Name!,
+                    TypeDefinition typeDef => typeDef.FullName,
+                    IMemberDefinition memDef => $"{memDef.DeclaringType!.FullName}.{memDef.Name}",
+                    ParameterDefinition pd => $"{pd.Method!.DeclaringType!.FullName}.{pd.Method!.Name}:{pd.Name}",
                     _ => throw new ArgumentException()
                 };
                 if (fname != _rule.FullName)

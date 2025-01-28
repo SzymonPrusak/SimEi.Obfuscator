@@ -4,6 +4,7 @@ using AsmResolver.DotNet.Serialized;
 using SimEi.Obfuscator.Config;
 using SimEi.Obfuscator.Renaming;
 using SimEi.Obfuscator.Renaming.Permission.Config;
+using SimEi.Obfuscator.Renaming.RenameLog;
 
 namespace SimEi.Obfuscator
 {
@@ -14,17 +15,9 @@ namespace SimEi.Obfuscator
             if (args.Length == 0)
             {
                 Console.WriteLine("Error: no config specified.");
-                Environment.Exit(0);
+                Environment.Exit(1);
             }
-            string configPath = args[0];
-            //string configPath = "config.xml";
-
-            ConfigDocument? config;
-            var serialier = new XmlSerializer(typeof(ConfigDocument));
-            using (var fstream = File.OpenRead(configPath))
-            {
-                config = (ConfigDocument?)serialier.Deserialize(fstream);
-            }
+            var config = ReadConfig(args[0]);
             if (config == null)
             {
                 Console.WriteLine("Error: invalid config file.");
@@ -49,12 +42,34 @@ namespace SimEi.Obfuscator
             var modules = asms.SelectMany(a => a.Modules);
             var configPerm = new ConfigPermissions(config, metadataResolver);
             var renaming = new RenamingPipeline(metadataResolver, configPerm);
-            renaming.Rename(modules);
+
+            var logger = new RenamingLogger();
+            renaming.Rename(modules, logger);
 
             Logger.Log($"Saving output files to {Environment.CurrentDirectory}");
-
             foreach (var lib in asms)
                 lib.Write(lib.Name + ".dll");
+
+            string mappingFilePath = Path.Combine(Environment.CurrentDirectory, "mapping.obf");
+            Logger.Log($"Saving mapping file to {mappingFilePath}");
+            using (var fstream = File.Create(mappingFilePath))
+            using (var writer = new StreamWriter(fstream))
+            {
+                foreach (var type in logger.TrackedGlobalTypes)
+                    type.Serialize(writer, 0);
+            }
+        }
+
+
+        private static ConfigDocument? ReadConfig(string configPath)
+        {
+            ConfigDocument? config;
+            var serialier = new XmlSerializer(typeof(ConfigDocument));
+            using (var fstream = File.OpenRead(configPath))
+            {
+                config = (ConfigDocument?)serialier.Deserialize(fstream);
+            }
+            return config;
         }
     }
 }
