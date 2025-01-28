@@ -55,7 +55,7 @@ namespace SimEi.Obfuscator
             using (var fstream = File.Create(mappingFilePath))
             using (var writer = new StreamWriter(fstream))
             {
-                foreach (var type in logger.TrackedGlobalTypes)
+                foreach (var type in logger.TrackedGlobalTypes.OrderBy(e => e.Original))
                     type.Serialize(writer, 0);
             }
         }
