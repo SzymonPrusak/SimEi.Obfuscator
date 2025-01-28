@@ -6,20 +6,9 @@ namespace SimEi.Obfuscator.Renaming.Permission
     {
         public bool CanRename(IMetadataMember member)
         {
-            if (member is IMemberDefinition def)
-            {
-                var declType = def.DeclaringType;
-                while (declType != null)
-                {
-                    if (declType.Name == "<PrivateImplementationDetails>")
-                        return false;
-                    declType = declType.DeclaringType;
-                }
-            }
-
             if (member is TypeDefinition type)
             {
-                return !type.IsModuleType && type.Name != "<PrivateImplementationDetails>"
+                return !type.IsModuleType
                     && type.Namespace != "Microsoft.CodeAnalysis"
                     && type.Namespace != "System.Runtime.CompilerServices";
             }
