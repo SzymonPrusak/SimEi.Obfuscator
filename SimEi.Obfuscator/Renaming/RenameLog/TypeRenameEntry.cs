@@ -34,6 +34,8 @@ namespace SimEi.Obfuscator.Renaming.RenameLog
             WriteCollection(writer, "Events", indentation + 1, Events.Where(e => e.IsRenamed));
             WriteCollection(writer, "Methods", indentation + 1, Methods.Where(e => e.IsRenamed));
 
+            WriteCollection(writer, "NestedTypes", indentation + 1, NestedTypes);
+
             base.WriteLineWithIndentation(writer, indentation, "EndType");
         }
 
