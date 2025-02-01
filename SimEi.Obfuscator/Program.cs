@@ -28,7 +28,7 @@ namespace SimEi.Obfuscator
             var rtCtx = new RuntimeContext(rtInfo);
             var mrp = new ModuleReaderParameters(rtCtx);
 
-            string basePath = config.BaseDir!.Value;
+            string basePath = config.BaseDir?.Value ?? Environment.CurrentDirectory;
             var asms = config.Modules.Select(a => a.Name)
                 .Select(p => AssemblyDefinition.FromFile(Path.Combine(basePath, p), mrp))
                 .ToList();
