@@ -42,7 +42,7 @@ namespace SimEi.Obfuscator.Renaming.Permission.Config
             {
                 if (at.HasValue && at.Value == ActionType.Include)
                     return ActionType.Include;
-                return r.ResolveAction(member, _metadataResolver);
+                return r.ResolveAction(member, _metadataResolver) ?? at;
             });
             return (res ?? ActionType.Include) == ActionType.Include;
         }
