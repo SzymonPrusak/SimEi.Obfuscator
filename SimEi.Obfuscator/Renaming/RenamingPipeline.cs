@@ -32,8 +32,8 @@ namespace SimEi.Obfuscator.Renaming
             var obfAttrPerm = new ObfuscationAttributePermissions();
             foreach (var module in modules)
             {
-                Visit(module, refTracker);
-                Visit(module, obfAttrPerm);
+                ModuleVisitorBase.Visit(module, refTracker);
+                ModuleVisitorBase.Visit(module, obfAttrPerm);
             }
             Logger.Log($"Found {refTracker.ReferenceCount} references.");
 
@@ -47,50 +47,12 @@ namespace SimEi.Obfuscator.Renaming
             var finalPerm = new CompositeRenamingPermissions(compPerm, excludeSigGraphPerm);
             var renamer = new Renamer(namingContext, finalPerm, logger);
             foreach (var module in modules)
-                Visit(module, renamer);
+                ModuleVisitorBase.Visit(module, renamer);
 
             Logger.Log("Fixing references...");
             refTracker.FixTrackedReferences();
 
             Logger.Log("Done!");
-        }
-
-
-        private void Visit(ModuleDefinition module, IModuleVisitor visitor)
-        {
-            foreach (var type in module.TopLevelTypes)
-                Visit(type, visitor);
-        }
-
-        private void Visit(TypeDefinition type, IModuleVisitor visitor)
-        {
-            visitor.VisitType(type);
-
-            foreach (var field in type.Fields)
-                visitor.VisitField(field);
-            foreach (var prop in type.Properties)
-                visitor.VisitProp(prop);
-            foreach (var evt in type.Events)
-                visitor.VisitEvent(evt);
-
-            foreach (var method in type.Methods)
-            {
-                visitor.VisitMethod(method);
-
-                if (method.CilMethodBody == null)
-                    continue;
-
-                foreach (var local in method.CilMethodBody.LocalVariables)
-                    visitor.VisitLocal(local);
-
-                foreach (var inst in method.CilMethodBody.Instructions)
-                    visitor.VisitInstruction(inst);
-                foreach (var excHandler in method.CilMethodBody.ExceptionHandlers)
-                    visitor.VisitExceptionHandler(excHandler);
-            }
-
-            foreach (var st in type.NestedTypes)
-                Visit(st, visitor);
         }
 
 

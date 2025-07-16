@@ -16,5 +16,8 @@ namespace SimEi.Obfuscator.Config
 
         [XmlArray]
         public List<Rule> GlobalRules { get; set; } = new List<Rule>();
+
+        [XmlElement("StripAttribute")]
+        public List<string> StrippedAttributes = new List<string>();
     }
 }

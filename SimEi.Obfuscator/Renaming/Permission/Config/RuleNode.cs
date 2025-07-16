@@ -48,7 +48,7 @@ namespace SimEi.Obfuscator.Renaming.Permission.Config
                 cur = GetParent(cur);
             }
 
-            return _rule.Action;
+            return rule == null ? _rule.Action : null;
         }
 
 
@@ -109,11 +109,12 @@ namespace SimEi.Obfuscator.Renaming.Permission.Config
                 while (st != null)
                 {
                     var stDef = resolver.ResolveType(st)!;
-                    if (_rule.SubtypeOf == stDef.Name!.ToString())
+                    if (_rule.SubtypeOf == stDef.FullName!.ToString())
                     {
                         applicable = true;
                         break;
                     }
+                    st = stDef.BaseType;
                 }
                 if (!applicable)
                     return false;

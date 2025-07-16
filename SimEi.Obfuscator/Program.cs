@@ -5,6 +5,7 @@ using SimEi.Obfuscator.Config;
 using SimEi.Obfuscator.Renaming;
 using SimEi.Obfuscator.Renaming.Permission.Config;
 using SimEi.Obfuscator.Renaming.RenameLog;
+using SimEi.Obfuscator.Stripping;
 
 namespace SimEi.Obfuscator
 {
@@ -32,6 +33,13 @@ namespace SimEi.Obfuscator
             var asms = config.Modules.Select(a => a.Name)
                 .Select(p => AssemblyDefinition.FromFile(Path.Combine(basePath, p), mrp))
                 .ToList();
+            var modules = asms.SelectMany(a => a.Modules);
+
+            Logger.Log($"Stripping attributes...");
+            var strippedAttrs = config.StrippedAttributes.ToHashSet();
+            var attrStripper = new AttributeStripper(attr => strippedAttrs.Contains(attr.FullName));
+            foreach (var module in modules)
+                ModuleVisitorBase.Visit(module, attrStripper);
 
             var asmResolver = new ObfuscatedAssemblyResolver(asms);
             asmResolver.SearchDirectories.Add(basePath);
@@ -39,7 +47,6 @@ namespace SimEi.Obfuscator
                 asmResolver.SearchDirectories.Add(pp.Value);
             var metadataResolver = new DefaultMetadataResolver(asmResolver);
 
-            var modules = asms.SelectMany(a => a.Modules);
             var configPerm = new ConfigPermissions(config, metadataResolver);
             var renaming = new RenamingPipeline(metadataResolver, configPerm);
 
